@@ -385,16 +385,16 @@
 
             <!-- Tabela de Itens -->
             <div class="mb-6 overflow-x-auto">
-                <table class="w-full text-left border-collapse min-w-[600px]">
+                <table class="w-full text-left border-collapse">
                     <thead>
-                        <tr class="bg-primary text-white text-sm">
-                            <th class="p-2 rounded-tl">Item / Descrição</th>
-                            <th class="p-2 w-24">Marca</th>
-                            <th class="p-2 w-12 text-center">Qtd</th>
-                            <th class="p-2 w-12 text-center">Unid</th>
-                            <th class="p-2 w-24 text-right">Vl. Unit</th>
-                            <th class="p-2 w-24 text-right rounded-tr">Total</th>
-                            <th class="p-2 w-8 no-print"></th>
+                        <tr class="bg-primary text-white text-xs md:text-sm">
+                            <th class="p-1 md:p-2 rounded-tl">Item</th>
+                            <th class="p-1 md:p-2 w-16 md:w-24">Marca</th>
+                            <th class="p-1 md:p-2 w-8 md:w-12 text-center">Qtd</th>
+                            <th class="p-1 md:p-2 w-8 md:w-12 text-center">Unid</th>
+                            <th class="p-1 md:p-2 w-16 md:w-24 text-right">Unit.</th>
+                            <th class="p-1 md:p-2 w-16 md:w-24 text-right rounded-tr">Total</th>
+                            <th class="p-1 md:p-2 w-6 md:w-8 no-print"></th>
                         </tr>
                     </thead>
                     <tbody id="orc-itens-body" class="text-sm text-gray-300">
@@ -774,15 +774,15 @@
             const total = p.preco * qtd;
 
             const tr = document.createElement('tr');
-            tr.className = "border-b border-gray-200 hover:bg-gray-50";
+            tr.className = "border-b border-gray-200 hover:bg-gray-50 text-xs md:text-sm";
             tr.innerHTML = `
-                <td class="p-2"><input class="w-full bg-transparent" value="${p.nome}"></td>
-                <td class="p-2"><input class="w-full bg-transparent" value="${p.marca || ''}"></td>
-                <td class="p-2"><input type="number" class="w-full bg-transparent text-center" value="${qtd}" onchange="recalcularLinha(this)"></td>
-                <td class="p-2 text-center">${p.unid}</td>
-                <td class="p-2"><input type="text" class="w-full bg-transparent text-right" value="${p.preco.toFixed(2).replace('.', ',')}" onchange="recalcularLinha(this)"></td>
-                <td class="p-2 text-right font-bold row-total">R$ ${total.toFixed(2).replace('.', ',')}</td>
-                <td class="p-2 no-print text-center"><button onclick="this.closest('tr').remove(); calcularTotais()" class="text-red-500"><i class="fas fa-times"></i></button></td>
+                <td class="p-1 md:p-2"><input class="w-full bg-transparent" value="${p.nome}"></td>
+                <td class="p-1 md:p-2"><input class="w-full bg-transparent" value="${p.marca || ''}"></td>
+                <td class="p-1 md:p-2"><input type="number" class="w-full bg-transparent text-center" value="${qtd}" onchange="recalcularLinha(this)"></td>
+                <td class="p-1 md:p-2 text-center">${p.unid}</td>
+                <td class="p-1 md:p-2"><input type="text" class="w-full bg-transparent text-right" value="${p.preco.toFixed(2).replace('.', ',')}" onchange="recalcularLinha(this)"></td>
+                <td class="p-1 md:p-2 text-right font-bold row-total">R$ ${total.toFixed(2).replace('.', ',')}</td>
+                <td class="p-1 md:p-2 no-print text-center"><button onclick="this.closest('tr').remove(); calcularTotais()" class="text-red-500"><i class="fas fa-times"></i></button></td>
             `;
             document.getElementById('orc-itens-body').appendChild(tr);
             calcularTotais();
