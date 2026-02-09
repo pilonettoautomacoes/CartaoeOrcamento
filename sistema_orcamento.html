@@ -389,10 +389,10 @@
                     <thead>
                         <tr class="bg-primary text-white text-sm">
                             <th class="p-2 rounded-tl">Item / Descrição</th>
-                            <th class="p-2 w-32">Marca</th>
-                            <th class="p-2 w-24">Qtd</th>
-                            <th class="p-2 w-16">Unid</th>
-                            <th class="p-2 w-24">Vl. Unit</th>
+                            <th class="p-2 w-24">Marca</th>
+                            <th class="p-2 w-12 text-center">Qtd</th>
+                            <th class="p-2 w-12 text-center">Unid</th>
+                            <th class="p-2 w-24 text-right">Vl. Unit</th>
                             <th class="p-2 w-24 text-right rounded-tr">Total</th>
                             <th class="p-2 w-8 no-print"></th>
                         </tr>
@@ -778,9 +778,9 @@
             tr.innerHTML = `
                 <td class="p-2"><input class="w-full bg-transparent" value="${p.nome}"></td>
                 <td class="p-2"><input class="w-full bg-transparent" value="${p.marca || ''}"></td>
-                <td class="p-2"><input type="number" class="w-full bg-transparent" value="${qtd}" onchange="recalcularLinha(this)"></td>
-                <td class="p-2">${p.unid}</td>
-                <td class="p-2"><input type="text" class="w-full bg-transparent" value="${p.preco.toFixed(2).replace('.', ',')}" onchange="recalcularLinha(this)"></td>
+                <td class="p-2"><input type="number" class="w-full bg-transparent text-center" value="${qtd}" onchange="recalcularLinha(this)"></td>
+                <td class="p-2 text-center">${p.unid}</td>
+                <td class="p-2"><input type="text" class="w-full bg-transparent text-right" value="${p.preco.toFixed(2).replace('.', ',')}" onchange="recalcularLinha(this)"></td>
                 <td class="p-2 text-right font-bold row-total">R$ ${total.toFixed(2).replace('.', ',')}</td>
                 <td class="p-2 no-print text-center"><button onclick="this.closest('tr').remove(); calcularTotais()" class="text-red-500"><i class="fas fa-times"></i></button></td>
             `;
