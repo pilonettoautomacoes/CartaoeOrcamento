@@ -89,8 +89,8 @@
     <!-- Navegação Superior -->
     <nav class="bg-surface border-b border-primary p-4 flex flex-col md:flex-row justify-between items-center gap-4 no-print">
         <div class="flex items-center gap-3 w-full md:w-auto justify-center md:justify-start">
-            <img src="assets/img/PA_Logo_semfundo.png" alt="Logo" class="h-10 w-auto">
-            <h1 class="text-xl font-bold text-gold">Cadastro e <span class="text-primary">Orçamentos</span></h1>
+            <img src="assets/img/PA_Logo_semfundo.png" alt="Logo" class="h-8 md:h-10 w-auto">
+            <h1 class="text-lg md:text-xl font-bold text-gold text-center leading-tight">Cadastro e <br class="md:hidden"><span class="text-primary">Orçamentos</span></h1>
         </div>
         <div class="flex gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0 justify-between md:justify-start">
             <button id="nav-clientes" onclick="showSection('clientes')" class="hover:text-gold transition">Clientes</button>
@@ -267,17 +267,17 @@
             <!-- Cabeçalho do Orçamento -->
             <div class="flex flex-col md:flex-row justify-between items-center md:items-start border-b-2 border-primary pb-4 mb-4 gap-4">
                 <div class="flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
-                    <img src="assets/img/PA_Logo_semfundo.png" alt="Logo" class="w-24 h-auto object-contain">
+                    <img src="assets/img/PA_Logo_semfundo.png" alt="Logo" class="w-16 md:w-24 h-auto object-contain">
                     <div>
-                        <img src="assets/img/PA_Nome_semfundo.png" alt="Pilonetto Automações" class="h-10 object-contain mb-1">
-                        <p class="text-sm text-gold font-semibold">Soluções Residenciais e Industriais</p>
-                        <p class="text-sm text-gray-400">pilonettoautomacoes@gmail.com | (45) 99960-4296 / (45) 99807-8659</p>
+                        <img src="assets/img/PA_Nome_semfundo.png" alt="Pilonetto Automações" class="h-8 md:h-10 object-contain mb-1 mx-auto md:mx-0">
+                        <p class="text-xs md:text-sm text-gold font-semibold">Soluções Residenciais e Industriais</p>
+                        <p class="text-[10px] md:text-sm text-gray-400">pilonettoautomacoes@gmail.com | (45) 99960-4296 / (45) 99807-8659</p>
                     </div>
                 </div>
-                <div class="text-center md:text-right w-full md:w-auto">
-                    <p class="text-sm text-gray-500">Orçamento Nº</p>
-                    <h3 class="text-3xl font-bold text-gold" id="orc-numero">000000</h3>
-                    <select id="orc-status" class="mt-2 p-1 border rounded text-sm font-bold text-white bg-primary">
+                <div class="text-center md:text-right w-full md:w-auto mt-2 md:mt-0">
+                    <p class="text-xs md:text-sm text-gray-500">Orçamento Nº</p>
+                    <h3 class="text-2xl md:text-3xl font-bold text-gold" id="orc-numero">000000</h3>
+                    <select id="orc-status" class="mt-2 p-1 border rounded text-xs md:text-sm font-bold text-white bg-primary">
                         <option value="Aguardando">Aguardando Aprovação</option>
                         <option value="Aprovado">Aprovado</option>
                         <option value="Concluido">Concluído</option>
