@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Meta Tags para Compartilhamento (WhatsApp/Instagram) -->
+    <meta property="og:title" content="Pilonetto Automações - Cartão Digital">
+    <meta property="og:description" content="Soluções em Automação Residencial e Industrial. Clique para ver meus contatos.">
+    <meta property="og:image" content="https://seusite.com/assets/img/PA_Logo_semfundo.png"> <!-- Troque pela URL real quando hospedar -->
+    <meta property="og:type" content="website">
+
+    <title>Cartão Virtual - Pilonetto Automações</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Configuração de Cores da Marca -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bgDeep: '#2e004f',
+                        primary: '#8c52ff',
+                        gold: '#ffd700',
+                        surface: '#3a0063'
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Efeito 3D Flip */
+        .perspective-1000 { perspective: 1000px; }
+        .transform-style-3d { transform-style: preserve-3d; }
+        .backface-hidden { backface-visibility: hidden; }
+        .rotate-y-180 { transform: rotateY(180deg); }
+        .flipped { transform: rotateY(180deg); }
+
+        /* Fundo Animado */
+        body {
+            background: radial-gradient(circle at center, #3a0063 0%, #1a002e 100%);
+            font-family: 'Segoe UI', sans-serif;
+        }
+    </style>
+</head>
+<body class="min-h-screen w-full flex flex-col items-center justify-center py-8 px-4 overflow-y-auto">
+
+    <!-- Container do Cartão -->
+    <div class="relative w-full max-w-[650px] aspect-[1.75/1] perspective-1000 group cursor-pointer select-none mb-2" onclick="virarCartao()">
+        
+        <!-- Wrapper que gira -->
+        <div id="card-inner" class="relative w-full h-full transition-transform duration-700 transform-style-3d shadow-2xl rounded-3xl">
+            
+            <!-- === FRENTE DO CARTÃO === -->
+            <div class="absolute w-full h-full backface-hidden rounded-xl overflow-hidden shadow-lg bg-bgDeep">
+                <!-- Imagem da Frente (Substitua o arquivo na pasta assets/img) -->
+                <img src="assets/img/cartao_frente.png" onerror="this.src='https://via.placeholder.com/650x371?text=Frente+do+Cartão'" alt="Frente" class="w-full h-full object-cover">
+            </div>
+
+            <!-- === VERSO DO CARTÃO (Gira 180deg) === -->
+            <div class="absolute w-full h-full backface-hidden rotate-y-180 rounded-xl overflow-hidden shadow-lg bg-surface">
+                <!-- Imagem do Verso -->
+                <img src="assets/img/cartao_verso.png" onerror="this.src='https://via.placeholder.com/650x371?text=Verso+do+Cartão'" alt="Verso" class="w-full h-full object-cover">
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Indicador de clique (Externo e Centralizado) -->
+    <div class="mb-6 text-center animate-bounce cursor-pointer" onclick="virarCartao()">
+        <span class="text-white/80 text-sm bg-black/30 px-4 py-1 rounded-full backdrop-blur-sm border border-white/10">
+            <i class="fas fa-hand-pointer mr-2"></i> Toque no cartão para virar
+        </span>
+    </div>
+
+    <!-- Botões Externos -->
+    <div class="w-full max-w-[650px] grid grid-cols-1 md:grid-cols-2 gap-3 px-2">
+        
+        <!-- WhatsApp Uebster -->
+        <a href="https://wa.me/5545999604296?text=Ol%C3%A1!%20Vi%20o%20cart%C3%A3o%20de%20voc%C3%AAs%20e%20gostaria%20de%20solicitar%20um%20or%C3%A7amento%20e%20obter%20maiores%20informa%C3%A7%C3%B5es." target="_blank" class="flex items-center justify-between bg-[#25D366] hover:bg-[#20bd5a] text-white p-3 rounded-xl shadow-lg transition-transform transform hover:scale-[1.02]">
+            <div class="flex items-center gap-3">
+                <i class="fab fa-whatsapp text-2xl"></i>
+                <div class="flex flex-col">
+                    <span class="font-bold text-sm">WhatsApp (Uebster)</span>
+                    <span class="text-xs opacity-90">Engenheiro Eletricista</span>
+                </div>
+            </div>
+            <i class="fas fa-chevron-right opacity-70 text-sm"></i>
+        </a>
+
+        <!-- WhatsApp João Carlos -->
+        <a href="https://wa.me/5545998078659?text=Ol%C3%A1!%20Vi%20o%20cart%C3%A3o%20de%20voc%C3%AAs%20e%20gostaria%20de%20solicitar%20um%20or%C3%A7amento%20e%20obter%20maiores%20informa%C3%A7%C3%B5es." target="_blank" class="flex items-center justify-between bg-[#25D366] hover:bg-[#20bd5a] text-white p-3 rounded-xl shadow-lg transition-transform transform hover:scale-[1.02]">
+            <div class="flex items-center gap-3">
+                <i class="fab fa-whatsapp text-2xl"></i>
+                <div class="flex flex-col">
+                    <span class="font-bold text-sm">WhatsApp (João Carlos)</span>
+                    <span class="text-xs opacity-90">Engenheiro Mecânico</span>
+                </div>
+            </div>
+            <i class="fas fa-chevron-right opacity-70 text-sm"></i>
+        </a>
+
+        <!-- Instagram -->
+        <a href="https://instagram.com/pilonetto.automacoes" target="_blank" class="flex items-center justify-between bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90 text-white p-3 rounded-xl shadow-lg transition-transform transform hover:scale-[1.02]">
+            <div class="flex items-center gap-3">
+                <i class="fab fa-instagram text-2xl"></i>
+                <div class="flex flex-col">
+                    <span class="font-bold text-sm">Instagram</span>
+                    <span class="text-xs opacity-90">@pilonetto.automacoes</span>
+                </div>
+            </div>
+            <i class="fas fa-chevron-right opacity-70 text-sm"></i>
+        </a>
+
+        <!-- Email -->
+        <a href="mailto:pilonettoautomacoes@gmail.com" class="flex items-center justify-between bg-gray-700 hover:bg-gray-600 text-white p-3 rounded-xl shadow-lg transition-transform transform hover:scale-[1.02]">
+            <div class="flex items-center gap-3">
+                <i class="fas fa-envelope text-2xl"></i>
+                <div class="flex flex-col">
+                    <span class="font-bold text-sm">E-mail</span>
+                    <span class="text-xs opacity-90">Solicitar Orçamento</span>
+                </div>
+            </div>
+            <i class="fas fa-chevron-right opacity-70 text-sm"></i>
+        </a>
+
+    </div>
+
+    <!-- Botão Flutuante de Compartilhar -->
+    <button onclick="compartilhar()" class="fixed bottom-6 right-6 bg-gold text-bgDeep w-14 h-14 rounded-full shadow-[0_0_15px_rgba(255,215,0,0.6)] flex items-center justify-center hover:scale-110 transition-transform z-50 border-2 border-white/20" title="Compartilhar Cartão">
+        <i class="fas fa-share-alt text-2xl"></i>
+    </button>
+
+    <script>
+        function virarCartao() {
+            const card = document.getElementById('card-inner');
+            card.classList.toggle('flipped');
+        }
+
+        async function compartilhar() {
+            const shareData = {
+                title: 'Pilonetto Automações',
+                text: 'Olá! Confira este cartão digital interativo:',
+                url: window.location.href // Pega o link atual da página
+            };
+
+            // Verifica se o navegador suporta compartilhamento nativo (Celulares geralmente suportam)
+            if (navigator.share) {
+                try {
+                    await navigator.share(shareData);
+                } catch (err) {
+                    console.log('Compartilhamento cancelado pelo usuário');
+                }
+            } else {
+                // Fallback para PC ou navegadores sem suporte: Copia o link
+                navigator.clipboard.writeText(window.location.href)
+                    .then(() => alert('Link copiado para a área de transferência!'));
+            }
+        }
+    </script>
+</body>
+</html>

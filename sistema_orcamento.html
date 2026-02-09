@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Orçamentos - Dark Mode</title>
+    <!-- Tailwind CSS para estilização rápida -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Configuração de Cores Personalizadas -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bgDeep: '#2e004f',
+                        primary: '#8c52ff',
+                        gold: '#ffd700',
+                        surface: '#3a0063'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        body { background-color: #2e004f; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; }
+        .input-custom {
+            background-color: #1a002e;
+            border: 1px solid #8c52ff;
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+            width: 100%;
+        }
+        .input-custom:focus { outline: none; border-color: #ffd700; }
+        .btn-primary { background-color: #8c52ff; color: white; padding: 8px 16px; border-radius: 4px; transition: 0.3s; }
+        .btn-primary:hover { background-color: #7030e0; }
+        .btn-gold { background-color: #ffd700; color: #2e004f; font-weight: bold; padding: 8px 16px; border-radius: 4px; }
+        .btn-gold:hover { background-color: #e6c200; }
+        
+        .print-only { display: none; }
+
+        /* Estilos de Impressão */
+        @media print {
+            body { 
+                /* Reduz para 70% do tamanho para caber na folha */
+                zoom: 70%;
+                /* Força o navegador a imprimir o fundo roxo e as cores exatas */
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                
+                /* Volta para fundo branco para economizar tinta e não ficar escuro em P&B */
+                background-color: white !important;
+                color: black !important;
+                
+                /* Corrige o corte na parte de cima */
+                height: auto !important;
+                overflow: visible !important;
+                display: block !important;
+
+                /* Margem superior para evitar cortes na impressão */
+                padding-top: 80px !important;
+            }
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            
+            /* Ajusta cores dos textos para fundo branco */
+            .input-custom { border: none; background: transparent; color: black !important; padding: 0; }
+            select { appearance: none; border: none; background: transparent; color: black !important; }
+            .text-white { color: black !important; }
+            .text-gray-300, .text-gray-400, .text-gray-100 { color: #333 !important; }
+            .bg-surface, .bg-bgDeep { background-color: white !important; border: 1px solid #ddd !important; color: black !important; }
+            
+            /* Mantém os detalhes coloridos (Cabeçalhos, Destaques) */
+            .bg-primary { background-color: #8c52ff !important; color: white !important; }
+            .bg-primary .text-white { color: white !important; } /* Garante texto branco no fundo roxo */
+            .text-gold { color: #b8860b !important; } /* Dourado mais escuro para ler no papel branco */
+            
+            /* Remove scrollbars e espaçamentos desnecessários na impressão */
+            main { overflow: visible !important; height: auto !important; padding: 0 !important; }
+            #sec-orcamento { border: none !important; box-shadow: none !important; padding: 0 !important; }
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden">
+
+    <!-- Navegação Superior -->
+    <nav class="bg-surface border-b border-primary p-4 flex justify-between items-center no-print">
+        <div class="flex items-center gap-3">
+            <img src="assets/img/PA_Logo_semfundo.png" alt="Logo" class="h-10 w-auto">
+            <h1 class="text-xl font-bold text-gold">Cadastro e <span class="text-primary">Orçamentos</span></h1>
+        </div>
+        <div class="flex gap-4">
+            <button id="nav-clientes" onclick="showSection('clientes')" class="hover:text-gold transition">Clientes</button>
+            <button id="nav-produtos" onclick="showSection('produtos')" class="hover:text-gold transition">Produtos</button>
+            <button id="nav-calculadora" onclick="showSection('calculadora')" class="hover:text-gold transition">Calculadora</button>
+            <button id="nav-orcamento" onclick="showSection('orcamento')" class="text-gold font-bold border-b-2 border-gold">Novo Orçamento</button>
+        </div>
+    </nav>
+
+    <!-- Área Principal -->
+    <main class="flex-1 overflow-auto p-6 relative">
+
+        <!-- SEÇÃO: CLIENTES -->
+        <section id="sec-clientes" class="hidden max-w-4xl mx-auto">
+            <h2 class="text-2xl text-gold mb-4 border-b border-primary pb-2">Cadastro de Clientes</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 bg-surface p-4 rounded border border-primary">
+                <div class="md:col-span-3">
+                    <label class="block text-gold text-xs font-bold uppercase mb-1">Nome Completo / Razão Social</label>
+                    <input type="text" id="cli-nome" class="input-custom">
+                </div>
+                <div>
+                    <label class="block text-gold text-xs font-bold uppercase mb-1">CPF / CNPJ</label>
+                    <input type="text" id="cli-doc" class="input-custom" oninput="this.value = mascaraCPF(this.value)" maxlength="18">
+                </div>
+                <div>
+                    <label class="block text-gold text-xs font-bold uppercase mb-1">RG</label>
+                    <input type="text" id="cli-rg" class="input-custom" oninput="this.value = mascaraRG(this.value)" maxlength="13">
+                </div>
+                <div>
+                    <label class="block text-gold text-xs font-bold uppercase mb-1">Telefone / WhatsApp</label>
+                    <input type="text" id="cli-tel" class="input-custom" oninput="this.value = mascaraTel(this.value)" maxlength="15">
+                </div>
+                <div>
+                    <label class="block text-gold text-xs font-bold uppercase mb-1">CEP</label>
+                    <input type="text" id="cli-cep" class="input-custom" oninput="this.value = mascaraCEP(this.value)" onblur="buscarCep(this.value)" maxlength="9">
+                </div>
+                <div>
+                    <label class="block text-gold text-xs font-bold uppercase mb-1">Logradouro</label>
+                    <input type="text" id="cli-logradouro" class="input-custom">
+                </div>
+                <div>
+                    <label class="block text-gold text-xs font-bold uppercase mb-1">Número</label>
+                    <input type="text" id="cli-num" class="input-custom">
+                </div>
+                <div>
+                    <label class="block text-gold text-xs font-bold uppercase mb-1">Complemento</label>
+                    <input type="text" id="cli-comp" placeholder="Casa, Apto..." class="input-custom">
+                </div>
+                <div>
+                    <label class="block text-gold text-xs font-bold uppercase mb-1">Bairro</label>
+                    <input type="text" id="cli-bairro" class="input-custom">
+                </div>
+                <div>
+                    <label class="block text-gold text-xs font-bold uppercase mb-1">Município</label>
+                    <input type="text" id="cli-cidade" class="input-custom">
+                </div>
+                <div>
+                    <label class="block text-gold text-xs font-bold uppercase mb-1">UF</label>
+                    <input type="text" id="cli-uf" class="input-custom">
+                </div>
+                <div class="md:col-span-3 mt-2">
+                    <input type="hidden" id="cli-id-edit" value="">
+                    <button onclick="salvarCliente()" id="btn-salvar-cli" class="btn-primary w-full font-bold uppercase">Salvar Cliente</button>
+                </div>
+            </div>
+            
+            <h3 class="text-white mb-2">Clientes Cadastrados</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-gray-300">
+                    <thead class="bg-primary text-white">
+                        <tr>
+                            <th class="p-2">Nome</th>
+                            <th class="p-2">CPF/CNPJ</th>
+                            <th class="p-2">Telefone</th>
+                            <th class="p-2">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-clientes">
+                        <!-- JS preenche aqui -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SEÇÃO: PRODUTOS -->
+        <section id="sec-produtos" class="hidden max-w-4xl mx-auto">
+            <h2 class="text-2xl text-gold mb-4 border-b border-primary pb-2">Catálogo de Produtos</h2>
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4 items-end bg-surface p-4 rounded border border-primary">
+                <div class="md:col-span-4">
+                    <label class="block text-gold text-xs font-bold uppercase mb-1">Nome do Produto</label>
+                    <input type="text" id="prod-nome" placeholder="Ex: Cabo Flexível" class="input-custom">
+                </div>
+                <div class="md:col-span-3">
+                    <label class="block text-gold text-xs font-bold uppercase mb-1">Marca</label>
+                    <input type="text" id="prod-marca" placeholder="Ex: Sil, Intelbras" class="input-custom">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-gold text-xs font-bold uppercase mb-1">Unidade</label>
+                    <select id="prod-unid" class="input-custom">
+                        <option value="un">un</option>
+                        <option value="m">m</option>
+                        <option value="kit">kit</option>
+                        <option value="pct">pct</option>
+                        <option value="srv">srv</option>
+                        <option value="cx">cx</option>
+                    </select>
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-gold text-xs font-bold uppercase mb-1">Preço</label>
+                    <input type="text" id="prod-preco" placeholder="R$ 0,00" class="input-custom" oninput="mascaraMoeda(this)">
+                </div>
+                <div class="md:col-span-1">
+                    <input type="hidden" id="prod-id-edit" value="">
+                    <button onclick="salvarProduto()" id="btn-salvar-prod" class="btn-primary w-full h-[42px] flex items-center justify-center"><i class="fas fa-plus"></i></button>
+                </div>
+            </div>
+            <div class="overflow-x-auto h-[600px]">
+                <table class="w-full text-left text-sm text-gray-300">
+                    <thead class="bg-primary text-white sticky top-0">
+                        <tr>
+                            <th class="p-2">Produto</th>
+                            <th class="p-2">Marca</th>
+                            <th class="p-2">Unidade</th>
+                            <th class="p-2">Preço Unit.</th>
+                            <th class="p-2">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-produtos">
+                        <!-- JS preenche aqui -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SEÇÃO: CALCULADORA DE PARCELAS -->
+        <section id="sec-calculadora" class="hidden max-w-4xl mx-auto">
+            <div class="flex items-center gap-4 mb-6 border-b border-primary pb-4">
+                <img src="assets/img/PA_Logo_semfundo.png" alt="Logo" class="w-24 h-auto object-contain">
+                <div>
+                    <img src="assets/img/PA_Nome_semfundo.png" alt="Pilonetto Automações" class="h-10 object-contain mb-1">
+                    <p class="text-sm text-gold font-semibold">Soluções Residenciais e Industriais</p>
+                    <p class="text-sm text-gray-400">pilonettoautomacoes@gmail.com | (45) 99960-4296 / (45) 99807-8659</p>
+                </div>
+            </div>
+            <h2 class="text-2xl text-gold mb-4 border-b border-primary pb-2">Simulação de Parcelamento (Crédito)</h2>
+            <div class="bg-surface p-6 rounded border border-primary mb-6">
+                <label class="block text-gold text-sm font-bold uppercase mb-2">Valor a Parcelar (R$)</label>
+                <div class="flex gap-4">
+                    <input type="text" id="calc-valor" class="input-custom text-2xl font-bold text-gold w-64" placeholder="R$ 0,00" oninput="mascaraMoeda(this); calcularParcelas()">
+                    <button onclick="calcularParcelas()" class="btn-primary">Recalcular</button>
+                </div>
+                <p class="text-xs text-gray-400 mt-2">* Cálculo baseado no acréscimo das taxas sobre o valor total.</p>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-gray-300">
+                    <thead class="bg-primary text-white">
+                        <tr>
+                            <th class="p-3">Parcelas</th>
+                            <th class="p-3">Taxa (%)</th>
+                            <th class="p-3">Valor da Parcela</th>
+                            <th class="p-3 text-right">Total Final</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-parcelas">
+                        <!-- JS preenche -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SEÇÃO: ORÇAMENTO (PRINCIPAL) -->
+        <section id="sec-orcamento" class="max-w-5xl mx-auto bg-surface text-gray-100 p-8 rounded shadow-lg min-h-[800px] border border-primary">
+            
+            <!-- Cabeçalho do Orçamento -->
+            <div class="flex justify-between items-start border-b-2 border-primary pb-4 mb-4">
+                <div class="flex items-center gap-4">
+                    <img src="assets/img/PA_Logo_semfundo.png" alt="Logo" class="w-24 h-auto object-contain">
+                    <div>
+                        <img src="assets/img/PA_Nome_semfundo.png" alt="Pilonetto Automações" class="h-10 object-contain mb-1">
+                        <p class="text-sm text-gold font-semibold">Soluções Residenciais e Industriais</p>
+                        <p class="text-sm text-gray-400">pilonettoautomacoes@gmail.com | (45) 99960-4296 / (45) 99807-8659</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm text-gray-500">Orçamento Nº</p>
+                    <h3 class="text-3xl font-bold text-gold" id="orc-numero">000000</h3>
+                    <select id="orc-status" class="mt-2 p-1 border rounded text-sm font-bold text-white bg-primary">
+                        <option value="Aguardando">Aguardando Aprovação</option>
+                        <option value="Aprovado">Aprovado</option>
+                        <option value="Concluido">Concluído</option>
+                        <option value="Vencido">Vencido</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Dados do Cliente e Venda -->
+            <div class="grid grid-cols-1 gap-6 mb-6 text-sm">
+                <div class="border p-3 rounded border-primary relative bg-bgDeep">
+                    <label class="absolute -top-2 left-2 bg-bgDeep px-1 text-gold font-bold text-xs">CLIENTE</label>
+                    <div class="relative mb-2 no-print">
+                        <input type="text" id="busca-cliente" placeholder="Buscar Cliente (Digite para pesquisar)..." class="input-custom text-xs" onkeyup="filtrarCliente(this.value)" autocomplete="off">
+                        <div id="lista-busca-clientes" class="absolute left-0 top-full w-full bg-surface border border-primary z-50 hidden max-h-40 overflow-y-auto shadow-lg"></div>
+                    </div>
+                    <div id="dados-cliente-display" class="grid grid-cols-1 gap-2 mt-2">
+                        <div>
+                            <label class="block text-xs font-bold text-gold uppercase">Nº Cadastro</label>
+                            <div id="disp-cli-id" class="text-gray-300 border-b border-gray-600 pb-1 min-h-[1.5em]">-</div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gold uppercase">Nome / Razão Social</label>
+                            <div id="disp-cli-nome" class="text-gray-300 border-b border-gray-600 pb-1 min-h-[1.5em]">-</div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gold uppercase">CPF / CNPJ</label>
+                                <div id="disp-cli-doc" class="text-gray-300 border-b border-gray-600 pb-1 min-h-[1.5em]">-</div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gold uppercase">RG</label>
+                                <div id="disp-cli-rg" class="text-gray-300 border-b border-gray-600 pb-1 min-h-[1.5em]">-</div>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gold uppercase">Contato</label>
+                            <div id="disp-cli-tel" class="text-gray-300 border-b border-gray-600 pb-1 min-h-[1.5em]">-</div>
+                        </div>
+                        <!-- Endereço Separado -->
+                        <div class="grid grid-cols-3 gap-2">
+                            <div class="col-span-2">
+                                <label class="block text-xs font-bold text-gold uppercase">Logradouro</label>
+                                <div id="disp-cli-log" class="text-gray-300 border-b border-gray-600 pb-1 min-h-[1.5em]">-</div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gold uppercase">Número</label>
+                                <div id="disp-cli-num" class="text-gray-300 border-b border-gray-600 pb-1 min-h-[1.5em]">-</div>
+                            </div>
+                            <div class="col-span-3">
+                                <label class="block text-xs font-bold text-gold uppercase">Complemento</label>
+                                <div id="disp-cli-comp" class="text-gray-300 border-b border-gray-600 pb-1 min-h-[1.5em]">-</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div>
+                                <label class="block text-xs font-bold text-gold uppercase">Bairro</label>
+                                <div id="disp-cli-bairro" class="text-gray-300 border-b border-gray-600 pb-1 min-h-[1.5em]">-</div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gold uppercase">Cidade/UF</label>
+                                <div id="disp-cli-cidade" class="text-gray-300 border-b border-gray-600 pb-1 min-h-[1.5em]">-</div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gold uppercase">CEP</label>
+                                <div id="disp-cli-cep" class="text-gray-300 border-b border-gray-600 pb-1 min-h-[1.5em]">-</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="border p-3 rounded border-primary relative bg-bgDeep">
+                    <label class="absolute -top-2 left-2 bg-bgDeep px-1 text-gold font-bold text-xs">DETALHES</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <p class="font-bold text-gold text-xs uppercase">Data Emissão</p>
+                            <input type="date" id="orc-data" class="w-full bg-transparent border-b border-gray-600 text-gray-300">
+                        </div>
+                        <div>
+                            <p class="font-bold text-gold text-xs uppercase">Validade</p>
+                            <input type="date" id="orc-validade" class="w-full bg-transparent border-b border-gray-600 text-gray-300">
+                        </div>
+                        <div class="col-span-2">
+                            <p class="font-bold text-gold text-xs uppercase">Vendedor</p>
+                            <select id="orc-vendedor" class="w-full p-2 border rounded text-sm font-bold text-white bg-primary mt-1">
+                                <option value="">Selecione...</option>
+                                <option value="Uebster Pilonetto">Uebster Pilonetto</option>
+                                <option value="João Carlos Pilonetto">João Carlos Pilonetto</option>
+                                <option value="Valdir Pilonetto">Valdir Pilonetto</option>
+                            </select>
+                        </div>
+                        <div class="col-span-2">
+                            <p class="font-bold text-gold text-xs uppercase">Método de Pagamento</p>
+                            <select id="orc-pagamento" class="w-full p-2 border rounded text-sm font-bold text-white bg-primary mt-1">
+                                <option value="">Selecione...</option>
+                                <option value="Pix">Pix</option>
+                                <option value="Dinheiro">Dinheiro</option>
+                                <option value="Boleto">Boleto</option>
+                                <option value="Cartão de Débito">Cartão de Débito</option>
+                                <option value="Cartão de Crédito">Cartão de Crédito</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabela de Itens -->
+            <div class="mb-6">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-primary text-white text-sm">
+                            <th class="p-2 rounded-tl">Item / Descrição</th>
+                            <th class="p-2 w-32">Marca</th>
+                            <th class="p-2 w-24">Qtd</th>
+                            <th class="p-2 w-16">Unid</th>
+                            <th class="p-2 w-24">Vl. Unit</th>
+                            <th class="p-2 w-24 text-right rounded-tr">Total</th>
+                            <th class="p-2 w-8 no-print"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="orc-itens-body" class="text-sm text-gray-300">
+                        <!-- Itens inseridos aqui -->
+                    </tbody>
+                </table>
+
+                <!-- Botão de Adicionar Item (Visível apenas na tela) -->
+                <div class="no-print mt-2 mb-6 p-4 bg-bgDeep rounded border border-primary">
+                    <h4 class="font-bold text-primary mb-2">Adicionar Item ao Orçamento</h4>
+                    <div class="flex gap-2">
+                        <select id="sel-produto-add" class="input-custom flex-1">
+                            <option value="">Selecione um produto do catálogo...</option>
+                            <!-- JS preenche -->
+                        </select>
+                        <input type="number" id="qtd-add" value="1" class="input-custom w-24" placeholder="Qtd">
+                        <button onclick="adicionarItemPeloSelect()" class="btn-primary">Adicionar</button>
+                    </div>
+                </div>
+
+                <!-- Observações -->
+                <div class="mt-8 border-t border-primary pt-4">
+                    <label class="font-bold text-sm">Observações:</label>
+                    <textarea id="orc-obs" class="w-full border border-primary p-2 rounded h-24 mt-1 bg-bgDeep text-white text-sm" placeholder="Condições de pagamento, prazos, validade da proposta..."></textarea>
+                </div>
+
+                <!-- Totais (Horizontal e Abaixo) -->
+                <div class="flex flex-wrap justify-end items-center gap-8 mt-4 border-t border-primary pt-4">
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-400 uppercase text-sm">Subtotal:</span>
+                        <span class="font-bold text-xl text-gold" id="val-subtotal">R$ 0,00</span>
+                    </div>
+                    
+                    <div class="flex items-center gap-2 border-l border-gray-600 pl-6">
+                        <span class="text-gold font-bold text-sm uppercase">Desconto:</span>
+                        <select id="sel-desconto" class="input-custom text-sm no-print w-24" onchange="aplicarDescontoPorcentagem()">
+                            <option value="0">Manual</option>
+                            <option value="0.05">5%</option>
+                            <option value="0.10">10%</option>
+                            <option value="0.15">15%</option>
+                            <option value="0.20">20%</option>
+                        </select>
+                        <input type="text" id="val-desconto" class="input-custom w-24 text-right no-print" value="R$ 0,00" oninput="mascaraMoeda(this); document.getElementById('sel-desconto').value='0'; calcularTotais()">
+                        <span class="print-only font-bold text-red-400" id="print-desconto">R$ 0,00</span>
+                    </div>
+
+                    <div class="flex items-center gap-2 border-l border-gray-600 pl-6">
+                        <span class="text-primary font-bold text-xl uppercase">TOTAL:</span>
+                        <span class="text-2xl font-bold text-gold" id="val-total">R$ 0,00</span>
+                        <button onclick="abrirCalculadoraComTotal()" class="text-xs text-gray-400 hover:text-gold ml-2 no-print underline" title="Simular Parcelamento deste valor">(Simular Parcelas)</button>
+                    </div>
+                </div>
+
+                <!-- Tabela de Parcelamento (Apenas Impressão - Página 2) -->
+                <div id="print-parcelas" class="print-only mt-8">
+                    <div style="page-break-before: always;"></div>
+                    <h2 class="text-xl font-bold text-primary mb-4">Simulação de Parcelamento (Crédito)</h2>
+                    <table class="w-full text-left text-sm border-collapse">
+                        <thead>
+                            <tr class="bg-primary text-white">
+                                <th class="p-2 border border-gray-300">Parcelas</th>
+                                <th class="p-2 border border-gray-300">Taxa</th>
+                                <th class="p-2 border border-gray-300">Valor Parcela</th>
+                                <th class="p-2 border border-gray-300 text-right">Total Final</th>
+                            </tr>
+                        </thead>
+                        <tbody id="print-parcelas-body"></tbody>
+                    </table>
+                    <p class="text-xs text-gray-500 mt-2">* Valores aproximados sujeitos a alteração da operadora de cartão.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Rodapé de Ferramentas -->
+    <footer id="main-footer" class="bg-surface border-t border-primary p-3 flex justify-center gap-4 no-print fixed bottom-0 w-full z-50 shadow-lg">
+        <button onclick="novoOrcamento()" class="btn-primary" title="Novo"><i class="fas fa-file"></i> <span class="hidden md:inline">Novo</span></button>
+        <button onclick="alert('Funcionalidade Desfazer em desenvolvimento')" class="btn-primary opacity-50" title="Desfazer"><i class="fas fa-undo"></i></button>
+        <button onclick="alert('Funcionalidade Refazer em desenvolvimento')" class="btn-primary opacity-50" title="Refazer"><i class="fas fa-redo"></i></button>
+        <button onclick="if(confirm('Limpar itens?')) { document.getElementById('orc-itens-body').innerHTML=''; calcularTotais(); }" class="btn-primary bg-red-600 hover:bg-red-700" title="Apagar Itens"><i class="fas fa-trash"></i></button>
+        <button onclick="window.print()" class="btn-primary" title="Imprimir"><i class="fas fa-print"></i> <span class="hidden md:inline">Imprimir/PDF</span></button>
+        <button onclick="salvarDados()" class="btn-gold" title="Salvar"><i class="fas fa-save"></i> <span class="hidden md:inline">Salvar Tudo</span></button>
+    </footer>
+
+    <!-- Lógica do Sistema -->
+    <script>
+        // --- DADOS INICIAIS ---
+        const produtosPadrao = [
+            { nome: "Cabo Flexível 0,5mm", marca: "Sil", unid: "m", preco: 1.00 },
+            { nome: "Cabo Flexível 0,75mm", marca: "Sil", unid: "m", preco: 1.20 },
+            { nome: "Cabo Flexível 1,0mm", marca: "Sil", unid: "m", preco: 1.50 },
+            { nome: "Cabo Flexível 1,5mm", marca: "Sil", unid: "m", preco: 2.00 },
+            { nome: "Cabo Flexível 2,5mm", marca: "Sil", unid: "m", preco: 3.50 },
+            { nome: "Cabo Flexível 4,0mm", marca: "Sil", unid: "m", preco: 5.80 },
+            { nome: "Cabo Flexível 6,0mm", marca: "Sil", unid: "m", preco: 8.90 },
+            { nome: "Cabo Flexível 10,0mm", marca: "Sil", unid: "m", preco: 15.00 },
+            { nome: "Cabo Flexível 16,0mm", marca: "Sil", unid: "m", preco: 22.00 },
+            { nome: "Cabo Flexível 25,0mm", marca: "Sil", unid: "m", preco: 35.00 },
+            { nome: "Interruptor 4x2 1 Tecla", marca: "Tramontina", unid: "un", preco: 15.00 },
+            { nome: "Interruptor 4x2 2 Teclas", marca: "Tramontina", unid: "un", preco: 22.00 },
+            { nome: "Interruptor 4x2 3 Teclas", marca: "Tramontina", unid: "un", preco: 28.00 },
+            { nome: "Interruptor 4x2 4 Teclas", marca: "Tramontina", unid: "un", preco: 35.00 },
+            { nome: "Interruptor 4x4 1 Tecla", marca: "Tramontina", unid: "un", preco: 18.00 },
+            { nome: "Interruptor 4x4 2 Teclas", marca: "Tramontina", unid: "un", preco: 25.00 },
+            { nome: "Interruptor 4x4 4 Teclas", marca: "Tramontina", unid: "un", preco: 40.00 },
+            { nome: "Caixa 4x2", marca: "Tigre", unid: "un", preco: 2.50 },
+            { nome: "Caixa 4x4", marca: "Tigre", unid: "un", preco: 4.50 },
+            { nome: "Hub Zigbee", marca: "Tuya", unid: "un", preco: 150.00 },
+            { nome: "Broadlink Universal", marca: "Broadlink", unid: "un", preco: 120.00 },
+            { nome: "Relé 10A", marca: "Sonoff", unid: "un", preco: 45.00 },
+            { nome: "Relé 16A", marca: "Sonoff", unid: "un", preco: 55.00 },
+            { nome: "Dimmer Inteligente", marca: "Moes", unid: "un", preco: 80.00 },
+            { nome: "Speaker (Alexa/Google)", marca: "Amazon", unid: "un", preco: 250.00 },
+            { nome: "Terminais (Pacote)", marca: "Genérico", unid: "pct", preco: 15.00 },
+            { nome: "Cintas Hellerman (Pacote)", marca: "Hellerman", unid: "pct", preco: 10.00 },
+            { nome: "Etiquetas e Tags", marca: "Genérico", unid: "kit", preco: 25.00 },
+            { nome: "Mão de Obra", marca: "Pilonetto", unid: "srv", preco: 0.00 }
+        ];
+
+        const taxasParcelamento = [
+            { p: 1, t: 4.99 },
+            { p: 2, t: 9.90 },
+            { p: 3, t: 11.28 },
+            { p: 4, t: 12.64 },
+            { p: 5, t: 13.97 },
+            { p: 6, t: 15.27 },
+            { p: 7, t: 16.55 },
+            { p: 8, t: 17.81 },
+            { p: 9, t: 19.04 },
+            { p: 10, t: 20.24 },
+            { p: 11, t: 21.43 },
+            { p: 12, t: 22.59 }
+        ];
+
+        let db = {
+            clientes: JSON.parse(localStorage.getItem('sysorc_clientes')) || [],
+            produtos: JSON.parse(localStorage.getItem('sysorc_produtos')) || produtosPadrao,
+            orcamentoAtual: { itens: [] }
+        };
+
+        // --- INICIALIZAÇÃO ---
+        window.onload = () => {
+            renderizarClientes();
+            renderizarProdutos();
+            novoOrcamento(); // Gera número novo
+            atualizarSelectProdutos();
+            
+            // Data de hoje
+            document.getElementById('orc-data').valueAsDate = new Date();
+            // Validade +30 dias
+            let validade = new Date();
+            validade.setDate(validade.getDate() + 30);
+            document.getElementById('orc-validade').valueAsDate = validade;
+        };
+
+        // --- NAVEGAÇÃO ---
+        function showSection(id) {
+            ['sec-clientes', 'sec-produtos', 'sec-orcamento', 'sec-calculadora'].forEach(s => document.getElementById(s).classList.add('hidden'));
+            document.getElementById('sec-' + id).classList.remove('hidden');
+            
+            // Atualiza Navegação
+            ['nav-clientes', 'nav-produtos', 'nav-orcamento', 'nav-calculadora'].forEach(n => {
+                const btn = document.getElementById(n);
+                btn.classList.remove('text-gold', 'border-b-2', 'border-gold');
+                btn.classList.add('hover:text-gold');
+            });
+            const activeBtn = document.getElementById('nav-' + id);
+            activeBtn.classList.add('text-gold', 'border-b-2', 'border-gold');
+            activeBtn.classList.remove('hover:text-gold');
+
+            // Controla Rodapé
+            document.getElementById('main-footer').classList.toggle('hidden', id !== 'orcamento');
+        }
+
+        // --- CLIENTES ---
+        function salvarCliente() {
+            const idEdit = document.getElementById('cli-id-edit').value;
+            const cliente = {
+                id: idEdit ? parseInt(idEdit) : Date.now(),
+                nome: document.getElementById('cli-nome').value,
+                doc: document.getElementById('cli-doc').value,
+                rg: document.getElementById('cli-rg').value,
+                tel: document.getElementById('cli-tel').value,
+                // Salvando campos separados para o orçamento
+                cep: document.getElementById('cli-cep').value,
+                logradouro: document.getElementById('cli-logradouro').value,
+                comp: document.getElementById('cli-comp').value,
+                num: document.getElementById('cli-num').value,
+                bairro: document.getElementById('cli-bairro').value,
+                cidade: document.getElementById('cli-cidade').value,
+                uf: document.getElementById('cli-uf').value
+            };
+            
+            if(!cliente.nome) return alert("Nome obrigatório");
+            
+            if(idEdit) {
+                // Atualizar existente
+                const index = db.clientes.findIndex(c => c.id == idEdit);
+                if(index > -1) db.clientes[index] = cliente;
+                document.getElementById('cli-id-edit').value = '';
+                document.getElementById('btn-salvar-cli').innerText = 'Salvar Cliente';
+            } else {
+                // Novo
+                db.clientes.push(cliente);
+            }
+
+            salvarDados();
+            renderizarClientes();
+            alert("Cliente Salvo!");
+            // Limpar form
+            document.querySelectorAll('#sec-clientes input').forEach(i => i.value = '');
+        }
+
+        function renderizarClientes() {
+            const tbody = document.getElementById('lista-clientes');
+            tbody.innerHTML = db.clientes.map(c => `
+                <tr class="border-b border-gray-700 hover:bg-surface">
+                    <td class="p-2">${c.nome}</td>
+                    <td class="p-2">${c.doc}</td>
+                    <td class="p-2">${c.tel}</td>
+                    <td class="p-2 flex gap-2">
+                        <button onclick="usarCliente(${c.id})" class="text-gold hover:underline" title="Usar no Orçamento"><i class="fas fa-check"></i></button>
+                        <button onclick="editarCliente(${c.id})" class="text-primary hover:text-white" title="Editar Cadastro"><i class="fas fa-edit"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function editarCliente(id) {
+            const c = db.clientes.find(x => x.id === id);
+            if(!c) return;
+            document.getElementById('cli-nome').value = c.nome;
+            document.getElementById('cli-doc').value = c.doc;
+            document.getElementById('cli-rg').value = c.rg || '';
+            document.getElementById('cli-tel').value = c.tel;
+            document.getElementById('cli-cep').value = c.cep || '';
+            document.getElementById('cli-logradouro').value = c.logradouro || '';
+            document.getElementById('cli-comp').value = c.comp || '';
+            document.getElementById('cli-num').value = c.num || '';
+            document.getElementById('cli-bairro').value = c.bairro || '';
+            document.getElementById('cli-cidade').value = c.cidade || '';
+            document.getElementById('cli-uf').value = c.uf || '';
+            
+            document.getElementById('cli-id-edit').value = c.id;
+            document.getElementById('btn-salvar-cli').innerText = 'Atualizar Cliente';
+            document.getElementById('cli-nome').focus();
+        }
+
+        function filtrarCliente(texto) {
+            const lista = document.getElementById('lista-busca-clientes');
+            if(texto.length === 0) {
+                lista.classList.add('hidden');
+                return;
+            }
+            
+            const matches = db.clientes.filter(c => c.nome.toLowerCase().includes(texto.toLowerCase()) || c.doc.includes(texto));
+            
+            if(matches.length > 0) {
+                lista.innerHTML = matches.map(c => `
+                    <div onclick="usarCliente(${c.id}); document.getElementById('lista-busca-clientes').classList.add('hidden');" class="p-2 hover:bg-primary hover:text-white cursor-pointer border-b border-gray-700">
+                        <div class="font-bold">${c.nome}</div>
+                        <div class="text-xs text-gray-400">${c.doc}</div>
+                    </div>
+                `).join('');
+                lista.classList.remove('hidden');
+            } else {
+                lista.classList.add('hidden');
+            }
+        }
+
+        function usarCliente(id) {
+            const c = db.clientes.find(x => x.id === id);
+            if (!c) return;
+            document.getElementById('disp-cli-id').innerText = String(c.id).padStart(6, '0');
+            document.getElementById('disp-cli-nome').innerText = c.nome;
+            document.getElementById('disp-cli-doc').innerText = c.doc;
+            document.getElementById('disp-cli-rg').innerText = c.rg || '-';
+            document.getElementById('disp-cli-tel').innerText = c.tel;
+            
+            // Preencher campos separados
+            document.getElementById('disp-cli-log').innerText = c.logradouro || '';
+            document.getElementById('disp-cli-comp').innerText = c.comp || '';
+            document.getElementById('disp-cli-num').innerText = c.num || '';
+            document.getElementById('disp-cli-bairro').innerText = c.bairro || '';
+            document.getElementById('disp-cli-cidade').innerText = `${c.cidade || ''}/${c.uf || ''}`;
+            document.getElementById('disp-cli-cep').innerText = c.cep || '';
+
+            showSection('orcamento');
+        }
+
+        // --- PRODUTOS ---
+        function salvarProduto() {
+            const idEdit = document.getElementById('prod-id-edit').value;
+            const precoStr = document.getElementById('prod-preco').value;
+            const precoFloat = parseFloat(precoStr.replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+
+            const prod = {
+                nome: document.getElementById('prod-nome').value,
+                marca: document.getElementById('prod-marca').value,
+                unid: document.getElementById('prod-unid').value,
+                preco: precoFloat
+            };
+            if(!prod.nome) return alert("Nome do produto obrigatório");
+
+            if(idEdit !== "") {
+                // Editar (usando índice como ID simples para este exemplo)
+                db.produtos[idEdit] = prod;
+                document.getElementById('prod-id-edit').value = "";
+                document.getElementById('btn-salvar-prod').innerHTML = '<i class="fas fa-plus"></i> Adicionar';
+            } else {
+                db.produtos.push(prod);
+            }
+
+            salvarDados();
+            renderizarProdutos();
+            atualizarSelectProdutos();
+            
+            // Limpar inputs
+            document.getElementById('prod-nome').value = "";
+            document.getElementById('prod-marca').value = "";
+            document.getElementById('prod-unid').value = "";
+            document.getElementById('prod-preco').value = "";
+        }
+
+        function editarProduto(index) {
+            const p = db.produtos[index];
+            document.getElementById('prod-nome').value = p.nome;
+            document.getElementById('prod-marca').value = p.marca || '';
+            document.getElementById('prod-unid').value = p.unid;
+            document.getElementById('prod-preco').value = 'R$ ' + p.preco.toFixed(2).replace('.', ',');
+            document.getElementById('prod-id-edit').value = index;
+            document.getElementById('btn-salvar-prod').innerHTML = '<i class="fas fa-sync"></i> Atualizar';
+        }
+
+        function renderizarProdutos() {
+            // Ordenar produtos alfabeticamente para facilitar a busca visual
+            db.produtos.sort((a, b) => a.nome.localeCompare(b.nome));
+
+            document.getElementById('lista-produtos').innerHTML = db.produtos.map((p, i) => `
+                <tr class="border-b border-gray-700">
+                    <td class="p-2">${p.nome}</td>
+                    <td class="p-2">${p.marca || '-'}</td>
+                    <td class="p-2">${p.unid}</td>
+                    <td class="p-2">R$ ${p.preco.toFixed(2).replace('.', ',')}</td>
+                    <td class="p-2 flex gap-2">
+                        <button onclick="editarProduto(${i})" class="text-primary hover:text-white"><i class="fas fa-edit"></i></button>
+                        <button onclick="db.produtos.splice(${i},1); salvarDados(); renderizarProdutos(); atualizarSelectProdutos();" class="text-red-400 hover:text-red-200"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function atualizarSelectProdutos() {
+            const sel = document.getElementById('sel-produto-add');
+            sel.innerHTML = '<option value="">Selecione...</option>' + 
+                db.produtos.map((p, index) => `<option value="${index}">${p.nome} (${p.marca || 'Genérico'}) - R$ ${p.preco.toFixed(2).replace('.', ',')}</option>`).join('');
+        }
+
+        // --- ORÇAMENTO ---
+        function novoOrcamento() {
+            // Lógica sequencial simples
+            let nextId = parseInt(localStorage.getItem('sysorc_last_id') || '1000');
+            nextId++;
+            localStorage.setItem('sysorc_last_id', nextId);
+            document.getElementById('orc-numero').innerText = nextId.toString().padStart(6, '0');
+            document.getElementById('orc-itens-body').innerHTML = '';
+            document.getElementById('val-desconto').value = 'R$ 0,00';
+            calcularTotais();
+        }
+
+        function adicionarItemPeloSelect() {
+            const index = document.getElementById('sel-produto-add').value;
+            const qtd = parseFloat(document.getElementById('qtd-add').value);
+            if (index === "" || isNaN(qtd)) return;
+
+            const p = db.produtos[index];
+            const total = p.preco * qtd;
+
+            const tr = document.createElement('tr');
+            tr.className = "border-b border-gray-200 hover:bg-gray-50";
+            tr.innerHTML = `
+                <td class="p-2"><input class="w-full bg-transparent" value="${p.nome}"></td>
+                <td class="p-2"><input class="w-full bg-transparent" value="${p.marca || ''}"></td>
+                <td class="p-2"><input type="number" class="w-full bg-transparent" value="${qtd}" onchange="recalcularLinha(this)"></td>
+                <td class="p-2">${p.unid}</td>
+                <td class="p-2"><input type="text" class="w-full bg-transparent" value="${p.preco.toFixed(2).replace('.', ',')}" onchange="recalcularLinha(this)"></td>
+                <td class="p-2 text-right font-bold row-total">R$ ${total.toFixed(2).replace('.', ',')}</td>
+                <td class="p-2 no-print text-center"><button onclick="this.closest('tr').remove(); calcularTotais()" class="text-red-500"><i class="fas fa-times"></i></button></td>
+            `;
+            document.getElementById('orc-itens-body').appendChild(tr);
+            calcularTotais();
+        }
+
+        function recalcularLinha(input) {
+            const tr = input.closest('tr');
+            const qtd = parseFloat(tr.cells[2].querySelector('input').value) || 0;
+            let precoStr = tr.cells[4].querySelector('input').value;
+            const preco = parseFloat(precoStr.replace(/\./g, '').replace(',', '.')) || 0;
+            const total = qtd * preco;
+            tr.cells[5].innerText = `R$ ${total.toFixed(2).replace('.', ',')}`;
+            calcularTotais();
+        }
+
+        function calcularTotais() {
+            let subtotal = 0;
+            document.querySelectorAll('.row-total').forEach(td => {
+                // Remove R$, remove ponto de milhar se houver, troca virgula por ponto para calculo JS
+                let val = td.innerText.replace('R$ ', '').replace(/\./g, '').replace(',', '.');
+                subtotal += parseFloat(val) || 0;
+            });
+            
+            const descStr = document.getElementById('val-desconto').value;
+            const desconto = parseFloat(descStr.replace(/[^0-9,]/g, '').replace(',', '.')) || 0;
+            const total = subtotal - desconto;
+
+            // Formata para exibição com vírgula
+            document.getElementById('val-subtotal').innerText = `R$ ${subtotal.toFixed(2).replace('.', ',')}`;
+            document.getElementById('val-total').innerText = `R$ ${total.toFixed(2).replace('.', ',')}`;
+            document.getElementById('print-desconto').innerText = `R$ ${desconto.toFixed(2).replace('.', ',')}`;
+
+            // Atualiza tabela de impressão
+            atualizarTabelaParcelasImpressao(total);
+        }
+
+        function aplicarDescontoPorcentagem() {
+            let subtotal = 0;
+            document.querySelectorAll('.row-total').forEach(td => {
+                let val = td.innerText.replace('R$ ', '').replace(/\./g, '').replace(',', '.');
+                subtotal += parseFloat(val) || 0;
+            });
+            const perc = parseFloat(document.getElementById('sel-desconto').value);
+            const valorDesc = subtotal * perc;
+            // Formata para R$ para exibir no input
+            document.getElementById('val-desconto').value = 'R$ ' + valorDesc.toFixed(2).replace('.', ',').replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
+            calcularTotais();
+        }
+
+        // --- CALCULADORA ---
+        function abrirCalculadoraComTotal() {
+            const totalStr = document.getElementById('val-total').innerText.replace('R$ ', '');
+            document.getElementById('calc-valor').value = 'R$ ' + totalStr;
+            showSection('calculadora');
+            calcularParcelas();
+        }
+
+        function calcularParcelas() {
+            const valorStr = document.getElementById('calc-valor').value;
+            const valor = parseFloat(valorStr.replace(/\D/g,'')) / 100 || 0;
+            
+            const tbody = document.getElementById('lista-parcelas');
+            tbody.innerHTML = taxasParcelamento.map(taxa => {
+                // Cálculo: Valor * (1 + Taxa/100)
+                const totalComTaxa = valor * (1 + (taxa.t / 100));
+                const valorParcela = totalComTaxa / taxa.p;
+                
+                return `
+                    <tr class="border-b border-gray-700 hover:bg-surface">
+                        <td class="p-3 font-bold text-gold">${taxa.p}x</td>
+                        <td class="p-3 text-gray-400">${taxa.t.toFixed(2)}%</td>
+                        <td class="p-3">R$ ${valorParcela.toFixed(2).replace('.', ',')}</td>
+                        <td class="p-3 text-right font-bold">R$ ${totalComTaxa.toFixed(2).replace('.', ',')}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function atualizarTabelaParcelasImpressao(valor) {
+            const tbody = document.getElementById('print-parcelas-body');
+            if (!tbody) return;
+
+            if (valor <= 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="p-2 text-center">Sem valores para calcular.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = taxasParcelamento.map(taxa => {
+                const totalComTaxa = valor * (1 + (taxa.t / 100));
+                const valorParcela = totalComTaxa / taxa.p;
+                
+                return `
+                    <tr class="border-b border-gray-300">
+                        <td class="p-2 border border-gray-300 font-bold">${taxa.p}x</td>
+                        <td class="p-2 border border-gray-300">${taxa.t.toFixed(2)}%</td>
+                        <td class="p-2 border border-gray-300">R$ ${valorParcela.toFixed(2).replace('.', ',')}</td>
+                        <td class="p-2 border border-gray-300 text-right">R$ ${totalComTaxa.toFixed(2).replace('.', ',')}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function salvarDados() {
+            localStorage.setItem('sysorc_clientes', JSON.stringify(db.clientes));
+            localStorage.setItem('sysorc_produtos', JSON.stringify(db.produtos));
+            alert("Dados salvos no navegador!");
+        }
+
+        // Função auxiliar de CEP (exemplo simples)
+        function buscarCep(cep) {
+            if(cep.length < 8) return;
+            fetch(`https://viacep.com.br/ws/${cep}/json/`)
+                .then(r => r.json())
+                .then(d => {
+                    if(!d.erro) {
+                        document.getElementById('cli-logradouro').value = d.logradouro;
+                        document.getElementById('cli-bairro').value = d.bairro;
+                        document.getElementById('cli-cidade').value = d.localidade;
+                        document.getElementById('cli-uf').value = d.uf;
+                    }
+                });
+        }
+
+        // --- MÁSCARAS ---
+        function mascaraCPF(v) {
+            v=v.replace(/\D/g,"")
+            if(v.length <= 11) { // CPF
+                v=v.replace(/(\d{3})(\d)/,"$1.$2")
+                v=v.replace(/(\d{3})(\d)/,"$1.$2")
+                v=v.replace(/(\d{3})(\d{1,2})$/,"$1-$2")
+            } else { // CNPJ
+                v=v.replace(/^(\d{2})(\d)/,"$1.$2")
+                v=v.replace(/^(\d{2})\.(\d{3})(\d)/,"$1.$2.$3")
+                v=v.replace(/\.(\d{3})(\d)/,".$1/$2")
+                v=v.replace(/(\d{4})(\d)/,"$1-$2")
+            }
+            return v
+        }
+        function mascaraTel(v) {
+            v=v.replace(/\D/g,"");
+            v=v.replace(/^(\d{2})(\d)/g,"($1) $2");
+            v=v.replace(/(\d)(\d{4})$/,"$1-$2");
+            return v;
+        }
+        function mascaraRG(v) {
+            v=v.replace(/\D/g,"");
+            v=v.replace(/(\d{1,2})(\d{3})(\d{3})(\d{1})$/,"$1.$2.$3-$4");
+            return v;
+        }
+        function mascaraCEP(v) {
+            v=v.replace(/\D/g,"")
+            v=v.replace(/^(\d{5})(\d)/,"$1-$2")
+            return v
+        }
+        function mascaraMoeda(i) {
+            let v = i.value.replace(/\D/g,'');
+            v = (v/100).toFixed(2) + '';
+            v = v.replace(".", ",");
+            v = v.replace(/(\d)(\d{3})(\d{3}),/g, "$1.$2.$3,");
+            v = v.replace(/(\d)(\d{3}),/g, "$1.$2,");
+            i.value = 'R$ ' + v;
+        }
+    </script>
+</body>
+</html>
