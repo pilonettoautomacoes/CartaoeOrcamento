@@ -238,9 +238,9 @@
             <h2 class="text-2xl text-gold mb-4 border-b border-primary pb-2">Simulação de Parcelamento (Crédito)</h2>
             <div class="bg-surface p-6 rounded border border-primary mb-6">
                 <label class="block text-gold text-sm font-bold uppercase mb-2">Valor a Parcelar (R$)</label>
-                <div class="flex gap-4">
-                    <input type="text" id="calc-valor" class="input-custom text-2xl font-bold text-gold w-64" placeholder="R$ 0,00" oninput="mascaraMoeda(this); calcularParcelas()">
-                    <button onclick="calcularParcelas()" class="btn-primary">Recalcular</button>
+                <div class="flex flex-col md:flex-row gap-4">
+                    <input type="text" id="calc-valor" class="input-custom text-2xl font-bold text-gold w-full md:w-64" placeholder="R$ 0,00" oninput="mascaraMoeda(this); calcularParcelas()">
+                    <button onclick="calcularParcelas()" class="btn-primary w-full md:w-auto">Recalcular</button>
                 </div>
                 <p class="text-xs text-gray-400 mt-2">* Cálculo baseado no acréscimo das taxas sobre o valor total.</p>
             </div>
@@ -388,6 +388,7 @@
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-primary text-white text-xs md:text-sm">
+                        <tr class="bg-primary text-white text-[10px] md:text-sm">
                             <th class="p-1 md:p-2 rounded-tl">Item</th>
                             <th class="p-1 md:p-2 w-16 md:w-24">Marca</th>
                             <th class="p-1 md:p-2 w-8 md:w-12 text-center">Qtd</th>
@@ -395,9 +396,16 @@
                             <th class="p-1 md:p-2 w-16 md:w-24 text-right">Unit.</th>
                             <th class="p-1 md:p-2 w-16 md:w-24 text-right rounded-tr">Total</th>
                             <th class="p-1 md:p-2 w-6 md:w-8 no-print"></th>
+                            <th class="p-1 md:p-2 w-12 md:w-24">Marca</th>
+                            <th class="p-1 md:p-2 w-6 md:w-12 text-center">Qtd</th>
+                            <th class="p-1 md:p-2 w-6 md:w-12 text-center">Unid</th>
+                            <th class="p-1 md:p-2 w-12 md:w-24 text-right">Unit.</th>
+                            <th class="p-1 md:p-2 w-14 md:w-24 text-right rounded-tr">Total</th>
+                            <th class="p-1 md:p-2 w-5 md:w-8 no-print"></th>
                         </tr>
                     </thead>
                     <tbody id="orc-itens-body" class="text-sm text-gray-300">
+                    <tbody id="orc-itens-body" class="text-[10px] md:text-sm text-gray-300">
                         <!-- Itens inseridos aqui -->
                     </tbody>
                 </table>
@@ -775,6 +783,7 @@
 
             const tr = document.createElement('tr');
             tr.className = "border-b border-gray-200 hover:bg-gray-50 text-xs md:text-sm";
+            tr.className = "border-b border-gray-200 hover:bg-gray-50 text-[10px] md:text-sm";
             tr.innerHTML = `
                 <td class="p-1 md:p-2"><input class="w-full bg-transparent" value="${p.nome}"></td>
                 <td class="p-1 md:p-2"><input class="w-full bg-transparent" value="${p.marca || ''}"></td>
