@@ -534,6 +534,7 @@
             produtos: JSON.parse(localStorage.getItem('sysorc_produtos')) || produtosPadrao,
             orcamentoAtual: { itens: [] }
         };
+        let orcamentoSalvo = false;
 
         // --- INICIALIZAÇÃO ---
         window.onload = () => {
@@ -755,10 +756,13 @@
 
         // --- ORÇAMENTO ---
         function novoOrcamento() {
-            // Lógica sequencial simples
-            let nextId = parseInt(localStorage.getItem('sysorc_last_id') || '1000');
-            nextId++;
-            localStorage.setItem('sysorc_last_id', nextId);
+            // Reseta o estado de salvo
+            orcamentoSalvo = false;
+            
+            // Apenas visualiza o próximo ID (último salvo + 1), sem incrementar no storage ainda
+            let lastId = parseInt(localStorage.getItem('sysorc_last_id') || '1000');
+            let nextId = lastId + 1;
+            
             document.getElementById('orc-numero').innerText = nextId.toString().padStart(6, '0');
             document.getElementById('orc-itens-body').innerHTML = '';
             document.getElementById('val-desconto').value = 'R$ 0,00';
@@ -889,7 +893,16 @@
         function salvarDados() {
             localStorage.setItem('sysorc_clientes', JSON.stringify(db.clientes));
             localStorage.setItem('sysorc_produtos', JSON.stringify(db.produtos));
-            alert("Dados salvos no navegador!");
+            
+            // Incrementa número do orçamento APENAS se ainda não foi salvo nesta sessão
+            if (!orcamentoSalvo) {
+                let lastId = parseInt(localStorage.getItem('sysorc_last_id') || '1000');
+                lastId++;
+                localStorage.setItem('sysorc_last_id', lastId);
+                orcamentoSalvo = true;
+            }
+
+            alert("Dados e Número do Orçamento salvos!");
         }
 
         // Função auxiliar de CEP (exemplo simples)
